@@ -2,9 +2,8 @@ package mate.academy.dao;
 
 import mate.academy.exception.DataProcessingException;
 import mate.academy.model.Book;
-import mate.academy.util.ConnectionUtil;
-
 import java.sql.*;
+import mate.academy.util.ConnectionUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +37,7 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public Optional<Book> findById(Long id) {
-        String sql = "SELECT id, title, price FROM books WHERE ID = ?";
+        String sql = "SELECT id, title, price FROM books WHERE id = ?";
         try (Connection connection = ConnectionUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
@@ -81,11 +80,33 @@ public class BookDaoImpl implements BookDao {
 
     @Override
     public Book update(Book book) {
-        return null;
+        String sql = "UPDATE books SET title = ?, price = ? WHERE id = ?";
+        try (Connection connection = ConnectionUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            statement.setString(1, book.getTitle());
+            statement.setBigDecimal(2, book.getPrice());
+            statement.setLong(3, book.getId());
+            int affectedRows = statement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new DataProcessingException("Can't update book with id " + book.getId());
+            }
+            return book;
+        } catch (SQLException e) {
+            throw new DataProcessingException("Can not update book " + book, e);
+        }
     }
 
     @Override
     public boolean deleteById(Long id) {
-        return false;
+        String sql = "DELETE FROM books WHERE id = ?";
+        try (Connection connection = ConnectionUtil.getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, id);
+            int affectedRows = statement.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            throw new DataProcessingException("Can't delete book with id" + id, e);
+        }
+
     }
 }

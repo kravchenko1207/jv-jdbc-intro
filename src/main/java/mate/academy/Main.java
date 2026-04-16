@@ -1,22 +1,29 @@
 package mate.academy;
 
+
 import mate.academy.dao.BookDao;
-import mate.academy.dao.BookDaoImpl;
+import mate.academy.lib.Injector;
 import mate.academy.model.Book;
 
 import java.math.BigDecimal;
 
-
 public class Main {
     public static void main(String[] args) {
-        BookDao bookDao = new BookDaoImpl();
+        Injector injector = Injector.getInstance("mate.academy");
+        BookDao bookDao = (BookDao) injector.getInstance(BookDao.class);
 
-        Book book1 = new Book();
-        book1.setTitle("Virus");
-        book1.setPrice(new BigDecimal("250.00"));
+        Book book = new Book();
+        book.setTitle("Book");
+        book.setPrice(BigDecimal.valueOf(1200));
+        Book book1 = bookDao.create(book);
 
-        bookDao.create(book1);
+        System.out.println(bookDao.findById(book1.getId()));
 
-        System.out.println("Book saved " + book1);
+        bookDao.findAll().forEach(System.out::println);
+
+        book1.setTitle("New book");
+        bookDao.update(book1);
+
+        bookDao.deleteById(book1.getId());
     }
 }
